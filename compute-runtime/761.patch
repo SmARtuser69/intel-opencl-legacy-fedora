@@ -1,0 +1,272 @@
+From c1e169ba2ee31d931a1ea0022eb6c28e844a87de Mon Sep 17 00:00:00 2001
+From: Sylvain Munaut <tnt@246tNt.com>
+Date: Fri, 21 Jun 2024 20:00:53 +0200
+Subject: [PATCH 1/2] fix: In Linux CL/GL sharing, always issue flush request
+ before export
+
+Apparently it's expected to flush the object (which might convert them
+from one format to another for export, or remove aux buffer uses or
+anything not supported by export).
+
+Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+---
+ .../sharings/gl/linux/gl_buffer_linux.cpp     | 19 +++++++++++++++----
+ .../sharings/gl/linux/gl_sharing_linux.cpp    |  7 +++++--
+ .../sharings/gl/linux/gl_sharing_linux.h      |  2 +-
+ .../sharings/gl/linux/gl_texture_linux.cpp    | 17 ++++++++++++++---
+ 4 files changed, 35 insertions(+), 10 deletions(-)
+
+diff --git a/opencl/source/sharings/gl/linux/gl_buffer_linux.cpp b/opencl/source/sharings/gl/linux/gl_buffer_linux.cpp
+index a0ef436cb03e3..0e2f9b29d781f 100644
+--- a/opencl/source/sharings/gl/linux/gl_buffer_linux.cpp
++++ b/opencl/source/sharings/gl/linux/gl_buffer_linux.cpp
+@@ -25,9 +25,11 @@ using namespace NEO;
+ Buffer *GlBuffer::createSharedGlBuffer(Context *context, cl_mem_flags flags, unsigned int bufferId, cl_int *errcodeRet) {
+     ErrorCodeHelper errorCode(errcodeRet, CL_SUCCESS);
+ 
+-    /* Prepare export request */
++    /* Prepare flush & export request */
+     struct mesa_glinterop_export_in objIn = {};
+     struct mesa_glinterop_export_out objOut = {};
++    struct mesa_glinterop_flush_out flushOut = {};
++    int fenceFd = -1;
+ 
+     objIn.version = 2;
+     objIn.target = GL_ARRAY_BUFFER;
+@@ -48,13 +50,22 @@ Buffer *GlBuffer::createSharedGlBuffer(Context *context, cl_mem_flags flags, uns
+         return nullptr;
+     }
+ 
++    flushOut.version = 1;
++    flushOut.fence_fd = &fenceFd;
++
+     objOut.version = 2;
+ 
+     /* Call MESA interop */
+     GLSharingFunctionsLinux *sharingFunctions = context->getSharing<GLSharingFunctionsLinux>();
++    bool success;
++    int retValue;
++
++    success = sharingFunctions->flushObjectsAndWait(1, &objIn, &flushOut, &retValue);
++    if (success) {
++        retValue = sharingFunctions->exportObject(&objIn, &objOut);
++    }
+ 
+-    int retValue = sharingFunctions->exportObject(&objIn, &objOut);
+-    if ((retValue != MESA_GLINTEROP_SUCCESS) || (objOut.version != 2)) {
++    if (!success || (retValue != MESA_GLINTEROP_SUCCESS) || (objOut.version != 2)) {
+         switch (retValue) {
+         case MESA_GLINTEROP_INVALID_DISPLAY:
+         case MESA_GLINTEROP_INVALID_CONTEXT:
+@@ -235,4 +246,4 @@ void GlBuffer::releaseResource(MemObj *memObject, uint32_t rootDeviceIndex) {
+     memoryManager->closeSharedHandle(memObject->getGraphicsAllocation(rootDeviceIndex));
+ }
+ 
+-void GlBuffer::callReleaseResource(bool createOrDestroy) {}
+\ No newline at end of file
++void GlBuffer::callReleaseResource(bool createOrDestroy) {}
+diff --git a/opencl/source/sharings/gl/linux/gl_sharing_linux.cpp b/opencl/source/sharings/gl/linux/gl_sharing_linux.cpp
+index 113ac679b4b5a..719fcc57941d9 100644
+--- a/opencl/source/sharings/gl/linux/gl_sharing_linux.cpp
++++ b/opencl/source/sharings/gl/linux/gl_sharing_linux.cpp
+@@ -122,10 +122,13 @@ GLboolean GLSharingFunctionsLinux::initGLFunctions() {
+ 
+     return 1;
+ }
+-bool GLSharingFunctionsLinux::flushObjectsAndWait(unsigned count, struct mesa_glinterop_export_in *resources, struct mesa_glinterop_flush_out *out) {
++bool GLSharingFunctionsLinux::flushObjectsAndWait(unsigned count, struct mesa_glinterop_export_in *resources, struct mesa_glinterop_flush_out *out, int *retValPtr) {
+     /* Call MESA interop */
+     int retValue = flushObjects(1, resources, out);
+-    if (retValue != MESA_GLINTEROP_SUCCESS) {
++    if (retValPtr) {
++        *retValPtr = retValue;
++    }
++    if ((retValue != MESA_GLINTEROP_SUCCESS) && (out->version == 1)) {
+         return false;
+     }
+     auto fenceFd = *out->fence_fd;
+diff --git a/opencl/source/sharings/gl/linux/gl_sharing_linux.h b/opencl/source/sharings/gl/linux/gl_sharing_linux.h
+index 10c6433cce9d3..778f147831e48 100644
+--- a/opencl/source/sharings/gl/linux/gl_sharing_linux.h
++++ b/opencl/source/sharings/gl/linux/gl_sharing_linux.h
+@@ -95,7 +95,7 @@ class GLSharingFunctionsLinux : public GLSharingFunctions {
+             return -ENOTSUP;
+         }
+     }
+-    bool flushObjectsAndWait(unsigned count, struct mesa_glinterop_export_in *resources, struct mesa_glinterop_flush_out *out);
++    bool flushObjectsAndWait(unsigned count, struct mesa_glinterop_export_in *resources, struct mesa_glinterop_flush_out *out, int *retValPtr = nullptr);
+     GLContext getBackupContextHandle() {
+         return glHGLRCHandleBkpCtx;
+     }
+diff --git a/opencl/source/sharings/gl/linux/gl_texture_linux.cpp b/opencl/source/sharings/gl/linux/gl_texture_linux.cpp
+index fe23d81539a13..7b65d909f1a7d 100644
+--- a/opencl/source/sharings/gl/linux/gl_texture_linux.cpp
++++ b/opencl/source/sharings/gl/linux/gl_texture_linux.cpp
+@@ -39,9 +39,11 @@ Image *GlTexture::createSharedGlTexture(Context *context, cl_mem_flags flags, cl
+     cl_image_format imgFormat = {};
+     McsSurfaceInfo mcsSurfaceInfo = {};
+ 
+-    /* Prepare export request */
++    /* Prepare flush & export request */
+     struct mesa_glinterop_export_in texIn = {};
+     struct mesa_glinterop_export_out texOut = {};
++    struct mesa_glinterop_flush_out flushOut = {};
++    int fenceFd = -1;
+ 
+     texIn.version = 2;
+     texIn.target = getBaseTargetType(target);
+@@ -69,13 +71,22 @@ Image *GlTexture::createSharedGlTexture(Context *context, cl_mem_flags flags, cl
+         return nullptr;
+     }
+ 
++    flushOut.version = 1;
++    flushOut.fence_fd = &fenceFd;
++
+     texOut.version = 2;
+ 
+     /* Call MESA interop */
+     GLSharingFunctionsLinux *sharingFunctions = context->getSharing<GLSharingFunctionsLinux>();
++    bool success;
++    int retValue;
++
++    success = sharingFunctions->flushObjectsAndWait(1, &texIn, &flushOut, &retValue);
++    if (success) {
++        retValue = sharingFunctions->exportObject(&texIn, &texOut);
++    }
+ 
+-    int retValue = sharingFunctions->exportObject(&texIn, &texOut);
+-    if ((retValue != MESA_GLINTEROP_SUCCESS) || (texOut.version != 2)) {
++    if (!success || (retValue != MESA_GLINTEROP_SUCCESS) || (texOut.version != 2)) {
+         switch (retValue) {
+         case MESA_GLINTEROP_INVALID_DISPLAY:
+         case MESA_GLINTEROP_INVALID_CONTEXT:
+
+From 3bc54ac0140cc6ff985590dc90330bb8229535c5 Mon Sep 17 00:00:00 2001
+From: Sylvain Munaut <tnt@246tNt.com>
+Date: Fri, 21 Jun 2024 13:18:09 +0200
+Subject: [PATCH 2/2] fix: In linux CL/GL sharing, use modifier to select
+ tiling mode
+
+Previously we just assumed that whatever tiling mode was picked by mesa
+will match the one picked by GMMLIB but that's not always the case
+and in particular on Arc and Xe it doesn't work ... Mesa picks Tile4
+and GMMLIB picks Tile64 ...
+
+Fixes: https://github.com/intel/compute-runtime/issues/736
+
+Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+---
+ .../sharings/gl/linux/gl_texture_linux.cpp    | 24 ++++++++++++++++-
+ shared/source/gmm_helper/gmm.cpp              | 26 +++++++++++++++++++
+ shared/source/helpers/surface_format_info.h   | 12 +++++++++
+ 3 files changed, 61 insertions(+), 1 deletion(-)
+
+diff --git a/opencl/source/sharings/gl/linux/gl_texture_linux.cpp b/opencl/source/sharings/gl/linux/gl_texture_linux.cpp
+index 7b65d909f1a7d..ad39f9bf781cd 100644
+--- a/opencl/source/sharings/gl/linux/gl_texture_linux.cpp
++++ b/opencl/source/sharings/gl/linux/gl_texture_linux.cpp
+@@ -29,6 +29,8 @@
+ #include "config.h"
+ #include <GL/gl.h>
+ 
++#include "third_party/uapi/upstream/drm/drm_fourcc.h"
++
+ namespace NEO {
+ Image *GlTexture::createSharedGlTexture(Context *context, cl_mem_flags flags, cl_GLenum target, cl_GLint miplevel, cl_GLuint texture,
+                                         cl_int *errcodeRet) {
+@@ -135,7 +137,27 @@ Image *GlTexture::createSharedGlTexture(Context *context, cl_mem_flags flags, cl
+     imgInfo.imgDesc.imageHeight = imgDesc.image_height;
+     imgInfo.imgDesc.imageDepth = imgDesc.image_depth;
+     imgInfo.imgDesc.imageRowPitch = imgDesc.image_row_pitch;
+-    imgInfo.linearStorage = (texOut.modifier == 0);
++
++    switch (texOut.modifier) {
++    case DRM_FORMAT_MOD_LINEAR:
++        imgInfo.linearStorage = true;
++        break;
++    case I915_FORMAT_MOD_X_TILED:
++        imgInfo.forceTiling = ImageTilingMode::tiledX;
++        break;
++    case I915_FORMAT_MOD_Y_TILED:
++        imgInfo.forceTiling = ImageTilingMode::tiledY;
++        break;
++    case I915_FORMAT_MOD_Yf_TILED:
++        imgInfo.forceTiling = ImageTilingMode::tiledYf;
++        break;
++    case I915_FORMAT_MOD_4_TILED:
++        imgInfo.forceTiling = ImageTilingMode::tiled4;
++        break;
++    default:
++       /* Just pray mesa picked the same that compute-runtime will */
++       break;
++    }
+ 
+     errorCode.set(CL_SUCCESS);
+ 
+diff --git a/shared/source/gmm_helper/gmm.cpp b/shared/source/gmm_helper/gmm.cpp
+index f33c4944d8375..0fbd6145849aa 100644
+--- a/shared/source/gmm_helper/gmm.cpp
++++ b/shared/source/gmm_helper/gmm.cpp
+@@ -130,6 +130,32 @@ void Gmm::setupImageResourceParams(ImageInfo &imgInfo, bool preferCompressed) {
+ 
+     resourceParams.Flags.Info.Linear = imgInfo.linearStorage;
+ 
++    switch (imgInfo.forceTiling) {
++    case ImageTilingMode::tiledW:
++        resourceParams.Flags.Info.TiledW = true;
++        break;
++    case ImageTilingMode::tiledX:
++        resourceParams.Flags.Info.TiledX = true;
++        break;
++    case ImageTilingMode::tiledY:
++        resourceParams.Flags.Info.TiledY = true;
++        break;
++    case ImageTilingMode::tiledYf:
++        resourceParams.Flags.Info.TiledYf = true;
++        break;
++    case ImageTilingMode::tiledYs:
++        resourceParams.Flags.Info.TiledYs = true;
++        break;
++    case ImageTilingMode::tiled4:
++        resourceParams.Flags.Info.Tile4 = true;
++        break;
++    case ImageTilingMode::tiled64:
++        resourceParams.Flags.Info.Tile64 = true;
++        break;
++    default:
++        break;
++    }
++
+     auto &gfxCoreHelper = gmmHelper->getRootDeviceEnvironment().getHelper<GfxCoreHelper>();
+     auto &productHelper = gmmHelper->getRootDeviceEnvironment().getHelper<ProductHelper>();
+     resourceParams.NoGfxMemory = 1; // dont allocate, only query for params
+diff --git a/shared/source/helpers/surface_format_info.h b/shared/source/helpers/surface_format_info.h
+index 4231add06e2d9..d9e93175f4dc1 100644
+--- a/shared/source/helpers/surface_format_info.h
++++ b/shared/source/helpers/surface_format_info.h
+@@ -230,6 +230,17 @@ struct ImageDescriptor {
+     bool fromParent;
+ };
+ 
++enum class ImageTilingMode {
++    tiledAuto = 0,
++    tiledW,
++    tiledX,
++    tiledY,
++    tiledYf,
++    tiledYs,
++    tiled4,
++    tiled64,
++};
++
+ struct ImageInfo {
+     ImageDescriptor imgDesc;
+     const SurfaceFormatInfo *surfaceFormat;
+@@ -247,6 +258,7 @@ struct ImageInfo {
+     bool linearStorage;
+     bool useLocalMemory;
+     bool isDisplayable;
++    ImageTilingMode forceTiling;
+ };
+ 
+ struct ImageImplicitArgs {
