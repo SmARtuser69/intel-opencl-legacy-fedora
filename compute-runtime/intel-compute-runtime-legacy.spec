@@ -25,10 +25,10 @@ URL: https://github.com/intel/compute-runtime
 Source0: compute-runtime-24.35.30872.32.tar.gz
 # https://github.com/intel/compute-runtime/pull/761
 # CL/GL sharing fixups
-Patch01: 761.patch
+#Patch01: 761.patch
 
 # Support opencl-headers-2024.10.24
-Patch02: 0001-CL-Headers-2024.10.24.patch
+#Patch02: 0001-CL-Headers-2024.10.24.patch
 
 # This is just for Intel GPUs
 ExclusiveArch:  x86_64
@@ -122,7 +122,7 @@ ln -s /usr/include/CL/ third_party/opencl_headers/CL
     -DNEO_OCL_VERSION_MINOR=%{neo_minor} \
     -DNEO_VERSION_BUILD=%{neo_build} \
     -DSKIP_UNIT_TESTS=1 \
-    -DNEO_DISABLE_LD_GOLD=1 \
+    #-DNEO_DISABLE_LD_GOLD=1 \
     -DNEO_LEGACY_PLATFORMS_SUPPORT=1
     -DNEO_CURRENT_PLATFORMS_SUPPORT=0 \
     -DKHRONOS_GL_HEADERS_DIR="/usr/include/GL/" \
