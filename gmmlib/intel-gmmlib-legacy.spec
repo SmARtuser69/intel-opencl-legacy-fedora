@@ -15,7 +15,7 @@ Summary:        Intel Graphics Memory Management Library
 
 License:        MIT AND BSD-3-Clause
 URL:            https://github.com/intel/gmmlib
-Source0:        %{url}/archive/%{name}-%{version}.tar.gz
+Source0:        intel-gmmlib-22.5.5.tar.gz
 
 # This package fails on s390x and ppc64le
 # g++: error: unrecognized argument in option ‘-march=corei7’
