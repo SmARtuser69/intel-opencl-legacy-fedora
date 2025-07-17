@@ -22,7 +22,7 @@ Summary: Compute API support for Intel graphics
 
 License: MIT
 URL: https://github.com/intel/compute-runtime
-Source0: compute-runtime-30872.32.tar.gz
+Source0: compute-runtime-24.35.30872.32.tar.gz
 # https://github.com/intel/compute-runtime/pull/761
 # CL/GL sharing fixups
 Patch01: 761.patch
