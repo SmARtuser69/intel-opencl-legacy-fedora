@@ -17,8 +17,8 @@ Version: %{neo_major}.%{neo_minor}.%{neo_build}
 Release: %autorelease
 Summary: Compute API support for Intel graphics
 
-%global _lto_cflags %{nil}
-%global optflags %{optflags} -Wno-error=maybe-uninitialized
+#%global _lto_cflags %{nil}
+#%global optflags %{optflags} -Wno-error=maybe-uninitialized
 
 License: MIT
 URL: https://github.com/intel/compute-runtime
@@ -38,7 +38,7 @@ BuildRequires: intel-gmmlib-devel
 BuildRequires: libva-devel
 BuildRequires: libdrm-devel
 BuildRequires: kernel-devel
-BuildRequires: intel-igc-devel
+BuildRequires: intel-igc-legacy-devel
 BuildRequires: ninja-build
 BuildRequires: libglvnd-devel
 BuildRequires: ocl-icd-devel
