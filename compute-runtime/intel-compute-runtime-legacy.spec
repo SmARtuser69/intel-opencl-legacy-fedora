@@ -23,12 +23,9 @@ Summary: Compute API support for Intel graphics
 License: MIT
 URL: https://github.com/intel/compute-runtime
 Source0: %{url}/archive/%{version}/compute-runtime-%{version}.tar.gz
-# https://github.com/intel/compute-runtime/pull/761
-# CL/GL sharing fixups
-#Patch01: 761.patch
 
-# Support opencl-headers-2024.10.24
-#Patch02: 0001-CL-Headers-2024.10.24.patch
+Patch01: 010-intel-compute-runtime-disable-werror.patch
+Patch02: 020-intel-compute-runtime-gcc15-fix.patch
 
 # This is just for Intel GPUs
 ExclusiveArch:  x86_64
