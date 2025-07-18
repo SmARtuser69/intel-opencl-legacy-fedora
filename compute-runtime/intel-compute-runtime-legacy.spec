@@ -40,7 +40,7 @@ BuildRequires: intel-gmmlib-devel
 BuildRequires: libva-devel
 BuildRequires: libdrm-devel
 BuildRequires: kernel-devel
-BuildRequires: intel-igc-legacy-devel
+BuildRequires: intel-igc-devel
 BuildRequires: ninja-build
 BuildRequires: libglvnd-devel
 BuildRequires: ocl-icd-devel
@@ -80,7 +80,7 @@ intel-ocloc (a tool for managing Intel Compute GPU device binary format).
 
 %package -n    intel-opencl-legacy
 Summary:       OpenCL support implementation for Intel GPUs
-Requires:      intel-igc-legacy-libs%{?_isa}
+Requires:      intel-igc-libs%{?_isa}
 Requires:      intel-gmmlib%{?_isa}
 
 %description -n intel-opencl-legacy
@@ -92,7 +92,7 @@ the programs and run them on the GPU.
 
 %package -n    intel-level-zero-legacy
 Summary:       oneAPI L0 support implementation for Intel GPUs
-Requires:      intel-igc-legacy-libs%{?_isa}
+Requires:      intel-igc-libs%{?_isa}
 Requires:      intel-gmmlib%{?_isa}
 # In some references, the package is named intel-level-zero-gpu, so provide that for convenience too
 Provides:      intel-level-zero-gpu-legacy%{?_isa}
