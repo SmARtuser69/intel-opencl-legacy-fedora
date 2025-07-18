@@ -127,10 +127,6 @@ ln -s /usr/include/CL/ third_party/opencl_headers/CL
     -DSUPPORT_DG1=1 \
     -DSUPPORT_DG2=1 \
     -Wno-dev \
-    #-DNEO_DRM_HEADERS_DIR="/usr/src/kernels/`rpm -q --queryformat '%{Version}-%{Release}.%{Arch}\n' kernel-devel | tail -n1`/include/uapi/drm/" \
-    #-DNEO_I915_HEADERS_DIR="/usr/src/kernels/`rpm -q --queryformat '%{Version}-%{Release}.%{Arch}\n' kernel-devel | tail -n1`/include/uapi/drm/" \
-    #-DNEO_XE_HEADERS_DIR="/usr/src/kernels/`rpm -q --queryformat '%{Version}-%{Release}.%{Arch}\n' kernel-devel | tail -n1`/include/uapi/drm/" \
-    #-DCL_TARGET_OPENCL_VERSION=300 \
     -G Ninja
 
 %cmake_build
