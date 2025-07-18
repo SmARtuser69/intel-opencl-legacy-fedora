@@ -48,7 +48,7 @@ BuildRequires: opencl-headers
 BuildRequires: oneapi-level-zero-devel
 
 # This doesn't get added automatically, so specify it explicitly
-Requires: intel-igc-legacy
+Requires: intel-igc
 
 # Let compute-runtime be a meta package for intel-ocloc, intel-opencl and intel-level-zero
 Requires: intel-ocloc-legacy = %{version}-%{release}
