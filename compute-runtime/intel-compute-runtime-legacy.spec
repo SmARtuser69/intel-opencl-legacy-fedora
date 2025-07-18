@@ -48,7 +48,7 @@ BuildRequires: opencl-headers
 BuildRequires: oneapi-level-zero-devel
 
 # This doesn't get added automatically, so specify it explicitly
-Requires: intel-igc
+Requires: intel-igc-legacy
 
 # Let compute-runtime be a meta package for intel-ocloc, intel-opencl and intel-level-zero
 Requires: intel-ocloc-legacy = %{version}-%{release}
@@ -81,7 +81,7 @@ intel-ocloc (a tool for managing Intel Compute GPU device binary format).
 %package -n    intel-opencl-legacy
 Summary:       OpenCL support implementation for Intel GPUs
 Requires:      intel-igc-legacy-libs%{?_isa}
-Requires:      intel-gmmlib-legacy%{?_isa}
+Requires:      intel-gmmlib%{?_isa}
 
 %description -n intel-opencl-legacy
 Implementation for the Intel GPUs of the OpenCL specification - a generic
@@ -93,7 +93,7 @@ the programs and run them on the GPU.
 %package -n    intel-level-zero-legacy
 Summary:       oneAPI L0 support implementation for Intel GPUs
 Requires:      intel-igc-legacy-libs%{?_isa}
-Requires:      intel-gmmlib-legacy%{?_isa}
+Requires:      intel-gmmlib%{?_isa}
 # In some references, the package is named intel-level-zero-gpu, so provide that for convenience too
 Provides:      intel-level-zero-gpu-legacy%{?_isa}
 
