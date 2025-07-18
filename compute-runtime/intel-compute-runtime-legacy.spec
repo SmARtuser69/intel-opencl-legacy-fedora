@@ -34,11 +34,11 @@ BuildRequires: cmake
 BuildRequires: make
 BuildRequires: gcc
 BuildRequires: gcc-c++
-BuildRequires: intel-gmmlib-legacy-devel
+BuildRequires: intel-gmmlib-devel
 BuildRequires: libva-devel
 BuildRequires: libdrm-devel
 BuildRequires: kernel-devel
-BuildRequires: intel-igc-legacy-devel
+BuildRequires: intel-igc-devel
 BuildRequires: ninja-build
 BuildRequires: libglvnd-devel
 BuildRequires: ocl-icd-devel
