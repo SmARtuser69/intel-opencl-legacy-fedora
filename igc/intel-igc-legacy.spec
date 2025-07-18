@@ -68,14 +68,14 @@ The Intel Graphics Compiler for OpenCL is an LLVM based compiler for OpenCL targ
 
 %package       devel
 Summary:       Intel Graphics Compiler Frontend - Devel Files
-Requires:      %{name}-libs%{?_isa}-legacy = %{version}-%{release}
+Requires:      %{name}-libs%{?_isa} = %{version}-%{release}
 
 %description   devel
 Devel files for Intel Graphics Compiler for OpenCL.
 
 %package       libs
 Summary:       Intel Graphics Compiler Frontend - Library Files
-Requires:      %{name}-legacy = %{version}-%{release}
+Requires:      %{name} = %{version}-%{release}
 
 %description   libs
 Library files for Intel Graphics Compiler for OpenCL.
