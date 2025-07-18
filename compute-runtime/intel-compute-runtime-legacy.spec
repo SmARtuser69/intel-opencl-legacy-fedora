@@ -17,8 +17,8 @@ Version: %{neo_major}.%{neo_minor}.%{neo_build}
 Release: %autorelease
 Summary: Compute API support for Intel graphics
 
-#%global _lto_cflags %{nil}
-#%global optflags %{optflags} -Wno-error=maybe-uninitialized
+%global _lto_cflags %{nil}
+%global optflags %{optflags} -Wno-error=maybe-uninitialized
 
 License: MIT
 URL: https://github.com/intel/compute-runtime
