@@ -34,7 +34,7 @@ BuildRequires: cmake
 BuildRequires: make
 BuildRequires: gcc
 BuildRequires: gcc-c++
-BuildRequires: intel-gmmlib-devel
+BuildRequires: intel-gmmlib-legacy-devel
 BuildRequires: libva-devel
 BuildRequires: libdrm-devel
 BuildRequires: kernel-devel
