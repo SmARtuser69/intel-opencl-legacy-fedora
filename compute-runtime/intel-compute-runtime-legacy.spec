@@ -122,9 +122,6 @@ ln -s /usr/include/CL/ third_party/opencl_headers/CL
     -DNEO_OCL_VERSION_MINOR=%{neo_minor} \
     -DNEO_VERSION_BUILD=%{neo_build} \
     -DSKIP_UNIT_TESTS=1 \
-    #-DNEO_DISABLE_LD_GOLD=1 \
-    -DNEO_LEGACY_PLATFORMS_SUPPORT=1
-    -DNEO_CURRENT_PLATFORMS_SUPPORT=0 \
     -DKHRONOS_GL_HEADERS_DIR="/usr/include/GL/" \
     -DKHRONOS_HEADERS_DIR="/usr/include/CL/" \
     -DNEO_DRM_HEADERS_DIR="/usr/src/kernels/`rpm -q --queryformat '%{Version}-%{Release}.%{Arch}\n' kernel-devel | tail -n1`/include/uapi/drm/" \
