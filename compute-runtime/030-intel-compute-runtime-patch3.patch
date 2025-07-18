@@ -1,0 +1,11 @@
+diff -ru compute-runtime-24.35.30872.32/shared/source/os_interface/linux/local/dg1/drm_tip_helper.cpp compute-runtime-24.35.30872.32-new/shared/source/os_interface/linux/local/dg1/drm_tip_helper.cpp
+--- compute-runtime-24.35.30872.32/shared/source/os_interface/linux/local/dg1/drm_tip_helper.cpp	2024-10-09 03:13:59.000000000 +0530
++++ compute-runtime-24.35.30872.32-new/shared/source/os_interface/linux/local/dg1/drm_tip_helper.cpp	2025-07-18 17:05:48.858413947 +0530
+@@ -9,6 +9,7 @@
+ 
+ #include <memory>
+ #include <vector>
++#include <cstdint>
+ 
+ namespace NEO {
+ 
