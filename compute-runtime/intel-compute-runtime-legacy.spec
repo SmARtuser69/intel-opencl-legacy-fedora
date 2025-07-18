@@ -27,7 +27,8 @@ Source0: %{url}/archive/%{version}/compute-runtime-%{version}.tar.gz
 Patch01: 010-intel-compute-runtime-disable-werror.patch
 Patch02: 020-intel-compute-runtime-gcc15-fix.patch
 Patch03: 030-intel-compute-runtime-patch3.patch
-
+Patch04: 0001-CL-Headers-2024.10.24.patch
+Patch05: 761.patch
 # This is just for Intel GPUs
 ExclusiveArch:  x86_64
 
