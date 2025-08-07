@@ -55,6 +55,9 @@ Requires: intel-ocloc-legacy = %{version}-%{release}
 Requires: intel-opencl-legacy = %{version}-%{release}
 Requires: intel-level-zero-legacy = %{version}-%{release}
 
+#conflicts
+Conflicts: intel-compute-runtime
+
 # prelim/drm
 Provides: bundled(drm-uapi-helper)
 
