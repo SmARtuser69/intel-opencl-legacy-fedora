@@ -62,6 +62,7 @@ Requires:      %{name}-libs%{?_isa} = %{version}-%{release}
 
 # Unfortunately, it isn't trivially posible to build with prebuilt vc-intrinsics
 Provides: bundled(intel-vc-intrinsics)
+Conflicts: intel-igc
 
 %description
 The Intel Graphics Compiler for OpenCL is an LLVM based compiler for OpenCL targeting Intel Gen graphics hardware architecture.
@@ -69,6 +70,7 @@ The Intel Graphics Compiler for OpenCL is an LLVM based compiler for OpenCL targ
 %package       devel
 Summary:       Intel Graphics Compiler Frontend - Devel Files
 Requires:      %{name}-libs%{?_isa} = %{version}-%{release}
+Conflicts: intel-igc-devel
 
 %description   devel
 Devel files for Intel Graphics Compiler for OpenCL.
@@ -76,6 +78,7 @@ Devel files for Intel Graphics Compiler for OpenCL.
 %package       libs
 Summary:       Intel Graphics Compiler Frontend - Library Files
 Requires:      %{name} = %{version}-%{release}
+Conflicts: intel-igc-libs
 
 %description   libs
 Library files for Intel Graphics Compiler for OpenCL.
