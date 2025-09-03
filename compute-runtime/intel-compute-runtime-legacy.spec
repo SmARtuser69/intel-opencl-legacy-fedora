@@ -10,7 +10,7 @@
 
 %global neo_major 24
 %global neo_minor 35
-%global neo_build 30872.32
+%global neo_build 30872.36
 
 Name: intel-compute-runtime-legacy
 Version: %{neo_major}.%{neo_minor}.%{neo_build}
@@ -40,7 +40,7 @@ BuildRequires: intel-gmmlib-devel
 BuildRequires: libva-devel
 BuildRequires: libdrm-devel
 BuildRequires: kernel-devel
-BuildRequires: intel-igc-devel
+BuildRequires: intel-igc-legacy-devel
 BuildRequires: ninja-build
 BuildRequires: libglvnd-devel
 BuildRequires: ocl-icd-devel
@@ -48,7 +48,7 @@ BuildRequires: opencl-headers
 BuildRequires: oneapi-level-zero-devel
 
 # This doesn't get added automatically, so specify it explicitly
-Requires: intel-igc
+Requires: intel-igc-legacy
 
 # Let compute-runtime be a meta package for intel-ocloc, intel-opencl and intel-level-zero
 Requires: intel-ocloc-legacy = %{version}-%{release}
@@ -67,6 +67,7 @@ providing compute API support (Level Zero, OpenCL) for Intel graphics hardware a
 
 %package -n    intel-ocloc-legacy
 Summary:       Tool for managing Intel Compute GPU device binary format
+Conflicts:     intel-ocloc
 
 %description -n intel-ocloc-legacy
 ocloc is a tool for managing Intel Compute GPU device binary format (a format used by Intel Compute GPU runtime).
@@ -83,8 +84,9 @@ intel-ocloc (a tool for managing Intel Compute GPU device binary format).
 
 %package -n    intel-opencl-legacy
 Summary:       OpenCL support implementation for Intel GPUs
-Requires:      intel-igc-libs%{?_isa}
+Requires:      intel-igc-legacy-libs%{?_isa}
 Requires:      intel-gmmlib%{?_isa}
+Conflicts:     intel-opencl
 
 %description -n intel-opencl-legacy
 Implementation for the Intel GPUs of the OpenCL specification - a generic
@@ -95,10 +97,11 @@ the programs and run them on the GPU.
 
 %package -n    intel-level-zero-legacy
 Summary:       oneAPI L0 support implementation for Intel GPUs
-Requires:      intel-igc-libs%{?_isa}
+Requires:      intel-igc-legacy-libs%{?_isa}
 Requires:      intel-gmmlib%{?_isa}
 # In some references, the package is named intel-level-zero-gpu, so provide that for convenience too
 Provides:      intel-level-zero-gpu-legacy%{?_isa}
+Conflicts:     intel-level-zero
 
 %description -n intel-level-zero-legacy
 Implementation for the Intel GPUs of the oneAPI L0 specification -  which provides direct-to-metal
@@ -129,8 +132,8 @@ ln -s /usr/include/CL/ third_party/opencl_headers/CL
     -DNEO_LEGACY_PLATFORMS_SUPPORT=1 \
     -DKHRONOS_GL_HEADERS_DIR="/usr/include/GL/" \
     -DKHRONOS_HEADERS_DIR="/usr/include/CL/" \
-    -DSUPPORT_DG1=1 \
-    -DSUPPORT_DG2=1 \
+    -DSUPPORT_DG1=0 \
+    -DSUPPORT_DG2=0 \
     -Wno-dev \
     -G Ninja
 
