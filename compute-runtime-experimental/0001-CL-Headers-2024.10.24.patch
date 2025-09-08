@@ -1,0 +1,149 @@
+From 47a29a622a0d4c36d2ac6c52aad01a167998f8d8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Franti=C5=A1ek=20Zatloukal?= <fzatlouk@redhat.com>
+Date: Tue, 3 Dec 2024 19:04:35 +0100
+Subject: [PATCH] CL Headers 2024.10.24
+
+---
+ opencl/source/context/context.cpp                          | 2 +-
+ opencl/source/context/context.h                            | 4 ++--
+ opencl/source/context/driver_diagnostics.cpp               | 4 ++--
+ opencl/source/context/driver_diagnostics.h                 | 6 +++---
+ opencl/source/sharings/gl/gl_sharing.h                     | 2 ++
+ opencl/test/unit_test/context/driver_diagnostics_tests.cpp | 6 +++---
+ third_party/opencl_headers/CL/cl_ext.h                     | 2 +-
+ 7 files changed, 14 insertions(+), 12 deletions(-)
+
+diff --git a/opencl/source/context/context.cpp b/opencl/source/context/context.cpp
+index a125818..831c973 100644
+--- a/opencl/source/context/context.cpp
++++ b/opencl/source/context/context.cpp
+@@ -245,7 +245,7 @@ bool Context::createImpl(const cl_context_properties *properties,
+         driverDiagnosticsUsed = debugManager.flags.PrintDriverDiagnostics.get();
+     }
+     if (driverDiagnosticsUsed >= 0) {
+-        driverDiagnostics.reset(new DriverDiagnostics((cl_diagnostics_verbose_level)driverDiagnosticsUsed));
++        driverDiagnostics.reset(new DriverDiagnostics((cl_diagnostic_verbose_level_intel)driverDiagnosticsUsed));
+     }
+ 
+     this->numProperties = numProperties;
+diff --git a/opencl/source/context/context.h b/opencl/source/context/context.h
+index 0b47594..4355869 100644
+--- a/opencl/source/context/context.h
++++ b/opencl/source/context/context.h
+@@ -184,7 +184,7 @@ class Context : public BaseObject<_cl_context> {
+     void registerSharing(Sharing *sharing);
+ 
+     template <typename... Args>
+-    void providePerformanceHint(cl_diagnostics_verbose_level flags, PerformanceHints performanceHint, Args &&...args) {
++    void providePerformanceHint(cl_diagnostic_verbose_level_intel flags, PerformanceHints performanceHint, Args &&...args) {
+         DEBUG_BREAK_IF(contextCallback == nullptr);
+         DEBUG_BREAK_IF(driverDiagnostics == nullptr);
+         char hint[DriverDiagnostics::maxHintStringSize];
+@@ -201,7 +201,7 @@ class Context : public BaseObject<_cl_context> {
+ 
+     template <typename... Args>
+     void providePerformanceHintForMemoryTransfer(cl_command_type commandType, bool transferRequired, Args &&...args) {
+-        cl_diagnostics_verbose_level verboseLevel = transferRequired ? CL_CONTEXT_DIAGNOSTICS_LEVEL_BAD_INTEL
++        cl_diagnostic_verbose_level_intel verboseLevel = transferRequired ? CL_CONTEXT_DIAGNOSTICS_LEVEL_BAD_INTEL
+                                                                      : CL_CONTEXT_DIAGNOSTICS_LEVEL_GOOD_INTEL;
+         PerformanceHints hint = driverDiagnostics->obtainHintForTransferOperation(commandType, transferRequired);
+ 
+diff --git a/opencl/source/context/driver_diagnostics.cpp b/opencl/source/context/driver_diagnostics.cpp
+index fa92320..3e96a8e 100644
+--- a/opencl/source/context/driver_diagnostics.cpp
++++ b/opencl/source/context/driver_diagnostics.cpp
+@@ -11,11 +11,11 @@
+ 
+ namespace NEO {
+ 
+-DriverDiagnostics::DriverDiagnostics(cl_diagnostics_verbose_level level) {
++DriverDiagnostics::DriverDiagnostics(cl_diagnostic_verbose_level_intel level) {
+     this->verboseLevel = level;
+ }
+ 
+-bool DriverDiagnostics::validFlags(cl_diagnostics_verbose_level flags) const {
++bool DriverDiagnostics::validFlags(cl_diagnostic_verbose_level_intel flags) const {
+     return !!(verboseLevel & flags);
+ }
+ 
+diff --git a/opencl/source/context/driver_diagnostics.h b/opencl/source/context/driver_diagnostics.h
+index 3c9d855..4f0b9b1 100644
+--- a/opencl/source/context/driver_diagnostics.h
++++ b/opencl/source/context/driver_diagnostics.h
+@@ -57,14 +57,14 @@ enum PerformanceHints {
+ 
+ class DriverDiagnostics {
+   public:
+-    DriverDiagnostics(cl_diagnostics_verbose_level level);
+-    bool validFlags(cl_diagnostics_verbose_level flags) const;
++    DriverDiagnostics(cl_diagnostic_verbose_level_intel level);
++    bool validFlags(cl_diagnostic_verbose_level_intel flags) const;
+     ~DriverDiagnostics() = default;
+     static const char *const hintFormat[];
+     static const cl_int maxHintStringSize = 1024;
+     PerformanceHints obtainHintForTransferOperation(cl_command_type commandType, bool transferRequired);
+ 
+   protected:
+-    cl_diagnostics_verbose_level verboseLevel;
++    cl_diagnostic_verbose_level_intel verboseLevel;
+ };
+ } // namespace NEO
+diff --git a/opencl/source/sharings/gl/gl_sharing.h b/opencl/source/sharings/gl/gl_sharing.h
+index f32816d..a16266e 100644
+--- a/opencl/source/sharings/gl/gl_sharing.h
++++ b/opencl/source/sharings/gl/gl_sharing.h
+@@ -30,6 +30,8 @@
+ #endif
+ #include "GL/glext.h"
+ 
++#include "CL/cl_gl.h"
++
+ #include <functional>
+ #include <mutex>
+ #include <unordered_map>
+diff --git a/opencl/test/unit_test/context/driver_diagnostics_tests.cpp b/opencl/test/unit_test/context/driver_diagnostics_tests.cpp
+index 294b3d6..36f1108 100644
+--- a/opencl/test/unit_test/context/driver_diagnostics_tests.cpp
++++ b/opencl/test/unit_test/context/driver_diagnostics_tests.cpp
+@@ -38,14 +38,14 @@ void CL_CALLBACK callbackFunction(const char *providedHint, const void *flags, s
+     strcpy_s((char *)userData + offset, DriverDiagnostics::maxHintStringSize, providedHint);
+ }
+ 
+-cl_diagnostics_verbose_level diagnosticsVerboseLevels[] = {
++cl_diagnostic_verbose_level_intel diagnosticsVerboseLevels[] = {
+     CL_CONTEXT_DIAGNOSTICS_LEVEL_BAD_INTEL,
+     CL_CONTEXT_DIAGNOSTICS_LEVEL_GOOD_INTEL,
+     CL_CONTEXT_DIAGNOSTICS_LEVEL_NEUTRAL_INTEL};
+ 
+ TEST_P(VerboseLevelTest, GivenVerboseLevelWhenProvidedHintLevelIsSameOrAllThenCallbackFunctionTakesProvidedHint) {
+     cl_device_id deviceID = devices[0];
+-    cl_diagnostics_verbose_level diagnosticsLevel = GetParam();
++    cl_diagnostic_verbose_level_intel diagnosticsLevel = GetParam();
+     cl_context_properties validProperties[3] = {CL_CONTEXT_SHOW_DIAGNOSTICS_INTEL, (cl_context_properties)diagnosticsLevel, 0};
+     retVal = CL_SUCCESS;
+ 
+@@ -67,7 +67,7 @@ TEST_P(VerboseLevelTest, GivenVerboseLevelWhenProvidedHintLevelIsSameOrAllThenCa
+ 
+ TEST_P(VerboseLevelTest, GivenVerboseLevelAllWhenAnyHintIsProvidedThenCallbackFunctionTakesProvidedHint) {
+     cl_device_id deviceID = devices[0];
+-    cl_diagnostics_verbose_level providedHintLevel = GetParam();
++    cl_diagnostic_verbose_level_intel providedHintLevel = GetParam();
+     cl_context_properties validProperties[3] = {CL_CONTEXT_SHOW_DIAGNOSTICS_INTEL, CL_CONTEXT_DIAGNOSTICS_LEVEL_ALL_INTEL, 0};
+     retVal = CL_SUCCESS;
+ 
+diff --git a/third_party/opencl_headers/CL/cl_ext.h b/third_party/opencl_headers/CL/cl_ext.h
+index 7eddb47..521c1a0 100644
+--- a/third_party/opencl_headers/CL/cl_ext.h
++++ b/third_party/opencl_headers/CL/cl_ext.h
+@@ -2704,7 +2704,7 @@ typedef struct _cl_motion_estimation_desc_intel {
+ #define CL_INTEL_DRIVER_DIAGNOSTICS_EXTENSION_NAME \
+     "cl_intel_driver_diagnostics"
+ 
+-typedef cl_uint             cl_diagnostics_verbose_level;
++typedef cl_bitfield             cl_diagnostic_verbose_level_intel;
+ 
+ /* cl_context_properties */
+ #define CL_CONTEXT_SHOW_DIAGNOSTICS_INTEL                   0x4106
+-- 
+2.47.1
+
