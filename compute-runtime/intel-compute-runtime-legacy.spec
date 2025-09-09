@@ -57,6 +57,7 @@ Requires: intel-level-zero-legacy = %{version}-%{release}
 
 #conflicts
 Conflicts: intel-compute-runtime
+Conflicts: intel-compute-runtime-legacy-bleed
 
 # prelim/drm
 Provides: bundled(drm-uapi-helper)
@@ -68,6 +69,7 @@ providing compute API support (Level Zero, OpenCL) for Intel graphics hardware a
 %package -n    intel-ocloc-legacy
 Summary:       Tool for managing Intel Compute GPU device binary format
 Conflicts:     intel-ocloc
+Conflicts:     intel-ocloc-legacy-bleed
 
 %description -n intel-ocloc-legacy
 ocloc is a tool for managing Intel Compute GPU device binary format (a format used by Intel Compute GPU runtime).
@@ -87,6 +89,7 @@ Summary:       OpenCL support implementation for Intel GPUs
 Requires:      intel-igc-legacy-libs%{?_isa}
 Requires:      intel-gmmlib%{?_isa}
 Conflicts:     intel-opencl
+Conflicts:     intel-opencl-legacy-bleed
 
 %description -n intel-opencl-legacy
 Implementation for the Intel GPUs of the OpenCL specification - a generic
@@ -102,6 +105,7 @@ Requires:      intel-gmmlib%{?_isa}
 # In some references, the package is named intel-level-zero-gpu, so provide that for convenience too
 Provides:      intel-level-zero-gpu-legacy%{?_isa}
 Conflicts:     intel-level-zero
+Conflicts:     intel-level-zero-legacy-bleed
 
 %description -n intel-level-zero-legacy
 Implementation for the Intel GPUs of the oneAPI L0 specification -  which provides direct-to-metal
