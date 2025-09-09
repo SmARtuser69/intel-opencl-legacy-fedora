@@ -64,7 +64,7 @@ Provides: bundled(drm-uapi-helper)
 
 %description
 The Intel Graphics Compute Runtime for oneAPI Level Zero and OpenCL Driver is an open source project
-providing compute API support (Level Zero, OpenCL) for Intel graphics hardware architectures (HD Graphics, Xe).
+providing compute API support (Level Zero, OpenCL) for Intel graphics hardware architectures (HD Graphics, Xe). (legacy)(bleed)
 
 %package -n    intel-ocloc-legacy-bleed
 Summary:       Tool for managing Intel Compute GPU device binary format
