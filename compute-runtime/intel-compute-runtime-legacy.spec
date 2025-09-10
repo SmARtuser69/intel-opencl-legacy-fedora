@@ -15,7 +15,7 @@
 Name: intel-compute-runtime-legacy
 Version: %{neo_major}.%{neo_minor}.%{neo_build}
 Release: %autorelease
-Summary: Compute API support for Intel graphics
+Summary: Compute API support for Intel graphics (legacy)
 
 %global _lto_cflags %{nil}
 %global optflags %{optflags} -Wno-error=maybe-uninitialized
@@ -64,7 +64,7 @@ Provides: bundled(drm-uapi-helper)
 
 %description
 The Intel Graphics Compute Runtime for oneAPI Level Zero and OpenCL Driver is an open source project
-providing compute API support (Level Zero, OpenCL) for Intel graphics hardware architectures (HD Graphics, Xe).
+providing compute API support (Level Zero, OpenCL) for Intel graphics hardware architectures (HD Graphics, Xe). (legacy)
 
 %package -n    intel-ocloc-legacy
 Summary:       Tool for managing Intel Compute GPU device binary format
