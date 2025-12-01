@@ -2,7 +2,7 @@
 ## (rpmautospec version 0.7.3)
 ## RPMAUTOSPEC: autorelease, autochangelog
 %define autorelease(e:s:pb:n) %{?-p:0.}%{lua:
-    release_number = 7;
+    release_number = 8;
     base_release_number = tonumber(rpm.expand("%{?-b*}%{!?-b:1}"));
     print(release_number + base_release_number - 1);
 }%{?-e:.%{-e*}}%{?-s:.%{-s*}}%{!?-n:%{?dist}}
@@ -10,7 +10,7 @@
 
 %global neo_major 24
 %global neo_minor 35
-%global neo_build 30872.36
+%global neo_build 30872.40
 
 Name: intel-compute-runtime-legacy
 Version: %{neo_major}.%{neo_minor}.%{neo_build}
