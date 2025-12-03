@@ -2,11 +2,12 @@
 ## (rpmautospec version 0.7.3)
 ## RPMAUTOSPEC: autorelease, autochangelog
 %define autorelease(e:s:pb:n) %{?-p:0.}%{lua:
-    release_number = 8;
+    release_number = 9;
     base_release_number = tonumber(rpm.expand("%{?-b*}%{!?-b:1}"));
     print(release_number + base_release_number - 1);
 }%{?-e:.%{-e*}}%{?-s:.%{-s*}}%{!?-n:%{?dist}}
 ## END: Set by rpmautospec
+
 
 %global neo_major 24
 %global neo_minor 35
@@ -141,7 +142,7 @@ ln -s /usr/include/CL/ third_party/opencl_headers/CL
     -Wno-dev \
     -G Ninja
 
-%cmake_build
+%cmake_build -j2
 
 %install
 %cmake_install
